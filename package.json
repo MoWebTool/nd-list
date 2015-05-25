@@ -28,7 +28,9 @@
   "spm": {
     "main": "index.js",
     "dependencies": {
-      "jquery": "1.11.1"
+      "jquery": "1.11.1",
+      "nd-base":"1.0.0",
+      "nd-alert":"1.0.0"
     },
     "devDependencies": {
       "expect.js": "0.3.1"
