@@ -81,11 +81,11 @@ var List  = Base.extend({
         if (data.count > nowTotal) {
           that.getList({
             data: that.get('mode') ? {
-              page: ++params.page
+              page: params.page
             } : {
               $offset: page * params.$limit
             }
-          })
+          });
         } else {
           that.trigger('loaded', that.get('list'));
         }
