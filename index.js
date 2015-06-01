@@ -74,6 +74,10 @@ var List  = Base.extend({
     });
 
     this.LIST(options).done(function (data) {
+      if(!data.count && data.items.length){
+        //没有分页的情况，没有返回data.count
+        data.count=data.items.length;
+      }
       if (data.count && data.items.length) {
         that.set('data', data.items);
         var page = params.$offset / params.$limit;
