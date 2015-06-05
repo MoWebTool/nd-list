@@ -94,6 +94,7 @@ var List  = Base.extend({
           that.trigger('loaded', that.get('list'));
         }
       } else {
+        that.trigger('drain');
         Alert.show('没有'+that.get('title')+'数据,请先创建!');
       }
 
