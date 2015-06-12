@@ -95,7 +95,7 @@ var List  = Base.extend({
         }
       } else {
         that.trigger('drain');
-        Alert.show('没有'+that.get('title')+'数据,请先创建!');
+        //Alert.show('没有'+that.get('title')+'数据,请先创建!');
       }
 
     }).fail(function (error) {
