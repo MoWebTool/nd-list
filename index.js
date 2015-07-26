@@ -11,16 +11,17 @@ var Base = require('nd-base');
 var debug = require('nd-debug');
 
 var List = Base.extend({
+
   attrs: {
     proxy: null,
     // 0: mysql or 1: mongodb
     mode: 0,
     title: '',
     params: {
-      $count: true,
-      $limit: 100
+      $count: true
     },
-    data: null
+    data: null,
+    list: []
   },
 
   initialize: function(config) {
@@ -37,27 +38,38 @@ var List = Base.extend({
       }, this);
     }
 
-    this.set('params', $.extend((function(mode) {
-      switch (mode) {
-        // case 2:
-        //   return {};
-        case 1:
-          return {
-            $count: true,
-            size: 10,
-            page: 0
-          };
-        default:
-          return {
-            $count: true,
-            $limit: 10,
-            $offset: 0
-          };
-      }
-    })(this.get('mode')), this.get('params')));
+    this.set('params', $.extend(this._getParams(), this.get('params')));
 
     // 取列表
     this.getList();
+  },
+
+  _getParams: function(count, params) {
+    if (count) {
+      switch (this.get('mode')) {
+        case 1:
+          return {
+            page: Math.ceil(count / params.size) - 1
+          };
+        default:
+          return {
+            $offset: (Math.ceil(count / params.$limit) - 1) * params.$limit
+          };
+      }
+    }
+
+    switch (this.get('mode')) {
+      case 1:
+        return {
+          size: 100,
+          page: 0
+        };
+      default:
+        return {
+          $limit: 100,
+          $offset: 0
+        };
+    }
   },
 
   getList: function(options) {
@@ -78,44 +90,15 @@ var List = Base.extend({
     });
 
     this.LIST(options).done(function(data) {
-      if (!data.count && data.items.length) {
-        //没有分页的情况，没有返回data.count
-        data.count = data.items.length;
-      }
+      var size = data.items.length;
 
-      if (data.count && data.items.length) {
-        that.set('data', data.items);
-
-        var nowTotal = (function(mode) {
-          switch (mode) {
-            // case 2:
-            //   return {};
-            case 1:
-              return ++params.page * params.size;
-            default:
-              return params.$offset + params.$limit;
-          }
-        })(that.get('mode'));
-
-        if (data.count > nowTotal) {
+      if (size) {
+        if (data.count > that.pushItems(data.items)) {
           that.getList({
-            data: (function(mode) {
-              switch (mode) {
-                // case 2:
-                //   return {};
-                case 1:
-                  return {
-                    page: Math.ceil(data.count / params.size) - 1
-                  };
-                default:
-                  return {
-                    $offset: (Math.ceil(data.count / params.$limit) - 1) * params.$limit
-                  };
-              }
-            })(that.get('mode'))
+            data: that._getParams(data.count, params)
           });
         } else {
-          that.trigger('loaded', that.get('list'));
+          that.trigger('drain');
         }
       } else {
         that.trigger('drain');
@@ -126,11 +109,12 @@ var List = Base.extend({
     });
   },
 
-  _onChangeData: function(data) {
-    this.set('list', (this.get('list') || []).concat(data));
+  pushItems: function(items) {
+    var list = this.get('list').concat(items);
+    this.set('list', list);
+    return list.length;
   }
 
 });
-
 
 module.exports = List;
