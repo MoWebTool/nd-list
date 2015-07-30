@@ -93,6 +93,9 @@ var List = Base.extend({
       var size = data.items.length;
 
       if (size) {
+        if (typeof data.count === 'undefined') {
+          data.total && (data.count = data.total);
+        }
         if (data.count > that.pushItems(data.items)) {
           that.getList({
             data: that._getParams(data.count, params)
