@@ -14,14 +14,21 @@ var List = Base.extend({
 
   attrs: {
     proxy: null,
-    // 0: mysql or 1: mongodb
-    mode: 0,
-    title: '',
     params: {
       $count: true
     },
     data: null,
-    list: []
+    list: [],
+    // 列表字段名
+    dataKey: 'items',
+    // 过滤数据
+    inFilter: function(data) {
+      return data;
+    },
+    // 过滤数据
+    outFilter: function(data) {
+      return data;
+    }
   },
 
   initialize: function(config) {
@@ -32,13 +39,10 @@ var List = Base.extend({
     if (!proxy) {
       debug.error('请设置数据源（proxy）');
     } else {
-      ['LIST', 'GET', 'PUT', 'PATCH', 'POST', 'DELETE']
-      .forEach(function(method) {
-        proxy[method] && (this[method] = proxy[method].bind(proxy));
-      }, this);
+      proxy.LIST && (this.LIST = proxy.LIST.bind(proxy));
     }
 
-    this.set('params', $.extend(this._getParams(), this.get('params')));
+    this.set('params', $.extend(this._getParams(0), this.get('params')));
 
     // 取列表
     this.getList();
@@ -46,30 +50,21 @@ var List = Base.extend({
 
   _getParams: function(count, params) {
     if (count) {
-      switch (this.get('mode')) {
-        case 1:
-          return {
-            page: Math.ceil(count / params.size) - 1
-          };
-        default:
-          return {
-            $offset: (Math.ceil(count / params.$limit) - 1) * params.$limit
-          };
-      }
+      return {
+        $offset: (Math.ceil(count / params.$limit) - 1) * params.$limit
+      };
     }
 
-    switch (this.get('mode')) {
-      case 1:
-        return {
-          size: 100,
-          page: 0
-        };
-      default:
-        return {
-          $limit: 100,
-          $offset: 0
-        };
+    if (typeof count === 'undefined') {
+      return {
+        $offset: params.$offset + params.$limit
+      };
     }
+
+    return {
+      $limit: 100,
+      $offset: 0
+    };
   },
 
   getList: function(options) {
@@ -81,40 +76,52 @@ var List = Base.extend({
       options = {};
     }
 
-    var params = options.data = $.extend({}, this.get('params'));
+    var params = options.data =
+      this.get('inFilter').call(this, $.extend({}, this.get('params')));
 
     Object.keys(params).forEach(function(key) {
+      // 空字符串不提交查询
       if (params[key] === '') {
         delete params[key];
       }
     });
 
-    this.LIST(options).done(function(data) {
-      var size = data.items.length;
+    this.LIST(options)
+      .done(function(data) {
+        data = that.get('outFilter').call(that, data);
 
-      if (size) {
-        if (typeof data.count === 'undefined') {
-          data.total && (data.count = data.total);
-        }
-        if (data.count > that.pushItems(data.items)) {
-          that.getList({
-            data: that._getParams(data.count, params)
-          });
+        var dataKey = that.get('dataKey');
+        var size = data[dataKey].length;
+
+        if (size) {
+          if (typeof data.count === 'undefined') {
+            data.total && (data.count = data.total);
+          }
+
+          if (data.count > that.pushItems(data[dataKey]) ||
+            typeof data.count === 'undefined') {
+            that.getList({
+              data: that._getParams(data.count, params)
+            });
+          } else {
+            that.trigger('drain');
+          }
         } else {
           that.trigger('drain');
         }
-      } else {
-        that.trigger('drain');
-      }
-
-    }).fail(function(error) {
-      debug.error(error);
-    });
+      }).fail(function(error) {
+        debug.error(error);
+      });
   },
 
   pushItems: function(items) {
     var list = this.get('list').concat(items);
-    this.set('list', list);
+
+    this.set('list', list, {
+      silent: true,
+      override: true
+    });
+
     return list.length;
   }
 

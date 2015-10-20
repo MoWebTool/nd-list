@@ -15,4 +15,9 @@ $ spm install nd-list --save
 ```js
 var List = require('nd-list');
 // use List
+new List({
+  proxy: new SomeModel({...})
+}).on('drain', function() {
+  console.log(this.get('list'));
+});
 ```
