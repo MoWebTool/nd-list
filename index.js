@@ -51,12 +51,6 @@ var List = Base.extend({
   _getParams: function(count, params) {
     if (count) {
       return {
-        $offset: (Math.ceil(count / params.$limit) - 1) * params.$limit
-      };
-    }
-
-    if (typeof count === 'undefined') {
-      return {
         $offset: params.$offset + params.$limit
       };
     }
