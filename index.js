@@ -49,7 +49,7 @@ var List = Base.extend({
   },
 
   _getParams: function(count, params) {
-    if (count) {
+    if (count || typeof count === 'undefined') {
       return {
         $offset: params.$offset + params.$limit
       };
