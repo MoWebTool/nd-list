@@ -6,7 +6,7 @@
 'use strict';
 
 var $ = require('jquery');
-
+var __ = require('nd-i18n');
 var Base = require('nd-base');
 var debug = require('nd-debug');
 
@@ -37,7 +37,7 @@ var List = Base.extend({
     var proxy = this.get('proxy');
 
     if (!proxy) {
-      debug.error('请设置数据源（proxy）');
+      debug.error(__('请设置数据源（proxy）'));
     } else {
       proxy.LIST && (this.LIST = proxy.LIST.bind(proxy));
     }

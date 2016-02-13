@@ -1,6 +1,8 @@
 # nd-list
 
-[![spm version](http://spm.crossjs.com/badge/nd-list)](http://spm.crossjs.com/package/nd-list)
+[![Travis](https://img.shields.io/travis/ndfront/nd-list.svg?style=flat-square)](https://github.com/ndfront/nd-list)
+[![Coveralls](https://img.shields.io/coveralls/ndfront/nd-list.svg?style=flat-square)](https://github.com/ndfront/nd-list)
+[![NPM version](https://img.shields.io/npm/v/nd-promise.svg?style=flat-square)](https://npmjs.org/package/nd-list)
 
 > repeat request list
 
