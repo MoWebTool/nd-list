@@ -5,7 +5,7 @@
 
 'use strict';
 
-var $ = require('jquery');
+var $ = require('nd-jquery');
 var __ = require('nd-i18n');
 var Base = require('nd-base');
 var debug = require('nd-debug');
@@ -81,7 +81,7 @@ var List = Base.extend({
     });
 
     this.LIST(options)
-      .done(function(data) {
+      .then(function(data) {
         data = that.get('outFilter').call(that, data);
 
         var dataKey = that.get('dataKey');
@@ -103,7 +103,7 @@ var List = Base.extend({
         } else {
           that.trigger('drain');
         }
-      }).fail(function(error) {
+      }).catch(function(error) {
         debug.error(error);
       });
   },
