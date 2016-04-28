@@ -93,7 +93,7 @@ var List = Base.extend({
         data = that.get('outFilter').call(that, data)
 
         var dataKey = that.get('dataKey')
-        var size = data[dataKey].length
+        var size = data[dataKey] && data[dataKey].length || 0
 
         if (!size) {
           return that.trigger('drain')
